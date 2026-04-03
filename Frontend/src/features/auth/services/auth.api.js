@@ -12,34 +12,39 @@ export async function register({ email, password, username }) {
       password,
       username,
     });
-    response.data;
+    return response.data; // ✅ FIX
   } catch (err) {
     console.log(err);
+    throw err; // ✅ optional but better
   }
 }
 
 export async function login({ email, password }) {
   try {
     const response = await api.post("/api/auth/login", { email, password });
-    response.data;
+    return response.data; // ✅ FIX
   } catch (err) {
     console.log(err);
+    throw err;
   }
 }
+
 export async function logout() {
   try {
-    const response = await axios.get("/api/auth/logout");
-    response.data;
+    const response = await api.get("/api/auth/logout"); // ✅ use api
+    return response.data; // ✅ FIX
   } catch (err) {
     console.log(err);
+    throw err;
   }
 }
 
 export async function getMe() {
   try {
-    const response = await axios.get("/api/auth/me");
-    response.data;
+    const response = await api.get("/api/auth/me"); // ✅ use api
+    return response.data; // ✅ FIX
   } catch (err) {
     console.log(err);
+    throw err;
   }
 }
