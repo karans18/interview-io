@@ -10,11 +10,20 @@ const Register = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [submitError, setSubmitError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-   await handleRegister({ username, email, password });
-    navigate("/");
+    setSubmitError("");
+
+    try {
+      await handleRegister({ username, email, password });
+      navigate("/");
+    } catch (err) {
+      setSubmitError(
+        err.response?.data?.message ?? "Unable to register right now.",
+      );
+    }
   };
   if (loading) {
     return (
@@ -32,10 +41,12 @@ const Register = () => {
           <div className="input-group">
             <label htmlFor="username">Username</label>
             <input
+              value={username}
               onChange={(e) => setUsername(e.target.value)}
               type="text"
               id="username"
               name="username"
+              autoComplete="username"
               placeholder="Enter username"
             />
           </div>
@@ -43,10 +54,12 @@ const Register = () => {
           <div className="input-group">
             <label htmlFor="email">Email</label>
             <input
+              value={email}
               onChange={(e) => setEmail(e.target.value)}
               type="email"
               id="email"
               name="email"
+              autoComplete="email"
               placeholder="Enter email address"
             />
           </div>
@@ -54,16 +67,20 @@ const Register = () => {
           <div className="input-group">
             <label htmlFor="password">Password</label>
             <input
+              value={password}
               onChange={(e) => setPassword(e.target.value)}
               type="password"
               id="password"
               name="password"
+              autoComplete="new-password"
               placeholder="Enter password"
             />
           </div>
 
           <button className="button primary-button">Register</button>
         </form>
+
+        {submitError ? <p>{submitError}</p> : null}
 
         <p>
           Already have an account? <Link to="/login">Login</Link>

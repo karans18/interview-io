@@ -10,13 +10,20 @@ const Login = () => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [submitError, setSubmitError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitError("");
 
-    handleLogin({ email, password });
-
-    navigate("/");
+    try {
+      await handleLogin({ email, password });
+      navigate("/");
+    } catch (err) {
+      setSubmitError(
+        err.response?.data?.message ?? "Unable to login right now.",
+      );
+    }
   };
 
   if (loading) {
@@ -41,6 +48,7 @@ const Login = () => {
               type="email"
               id="email"
               name="email"
+              autoComplete="email"
               placeholder="Enter email address"
             />
           </div>
@@ -53,6 +61,7 @@ const Login = () => {
               type="password"
               id="password"
               name="password"
+              autoComplete="current-password"
               placeholder="Enter password"
             />
           </div>
@@ -61,6 +70,8 @@ const Login = () => {
             Login
           </button>
         </form>
+
+        {submitError ? <p>{submitError}</p> : null}
 
         <p>
           Don't have an account? <Link to="/register">Register</Link>
