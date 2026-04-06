@@ -1,48 +1,22 @@
-import { useEffect, useState } from "react";
-import { AuthContext } from "./auth.context";
-import { getMe } from "./services/auth.api";
+import { createContext,useState } from "react";
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let isMounted = true;
+export const AuthContext = createContext()
 
-    const syncUser = async () => {
-      try {
-        const data = await getMe();
 
-        if (isMounted) {
-          setUser(data.user);
-        }
-      } catch (err) {
-        if (!isMounted) {
-          return;
-        }
+export const AuthProvider = ({ children }) => { 
 
-        setUser(null);
+    const [user, setUser] = useState(null)
+    const [loading, setLoading] = useState(true)
 
-        if (err.response?.status !== 401) {
-          console.log(err);
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
+    
 
-    syncUser();
 
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+    return (
+        <AuthContext.Provider value={{user,setUser,loading,setLoading}} >
+            {children}
+        </AuthContext.Provider>
+    )
 
-  return (
-    <AuthContext.Provider value={{ user, setUser, loading, setLoading }}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
+    
+}
