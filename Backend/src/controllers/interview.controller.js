@@ -3,25 +3,65 @@ const { generateInterviewReport, generateResumePdf } = require("../services/ai.s
 const interviewReportModel = require("../models/interviewReport.model")
 
 
+function isPdfFile(file) {
+    return Boolean(
+        file &&
+        (
+            file.mimetype === "application/pdf" ||
+            file.originalname?.toLowerCase().endsWith(".pdf")
+        )
+    )
+}
 
 
 /**
  * @description Controller to generate interview report based on user self description, resume and job description.
  */
 async function generateInterViewReportController(req, res) {
+    const selfDescription = typeof req.body.selfDescription === "string" ? req.body.selfDescription.trim() : ""
+    const jobDescription = typeof req.body.jobDescription === "string" ? req.body.jobDescription.trim() : ""
+    const resumeFile = req.file
 
-    const resumeContent = await (new pdfParse.PDFParse(Uint8Array.from(req.file.buffer))).getText()
-    const { selfDescription, jobDescription } = req.body
+    if (!jobDescription) {
+        return res.status(400).json({
+            message: "Job description is required."
+        })
+    }
+
+    if (!resumeFile && !selfDescription) {
+        return res.status(400).json({
+            message: "Please upload a PDF resume or provide a self description."
+        })
+    }
+
+    let resumeText = ""
+
+    if (resumeFile) {
+        if (!isPdfFile(resumeFile)) {
+            return res.status(400).json({
+                message: "Only PDF resumes are supported right now."
+            })
+        }
+
+        const resumeContent = await (new pdfParse.PDFParse(Uint8Array.from(resumeFile.buffer))).getText()
+        resumeText = resumeContent.text?.trim() || ""
+
+        if (!resumeText) {
+            return res.status(400).json({
+                message: "Could not extract text from the uploaded resume."
+            })
+        }
+    }
 
     const interViewReportByAi = await generateInterviewReport({
-        resume: resumeContent.text,
+        resume: resumeText,
         selfDescription,
         jobDescription
     })
 
     const interviewReport = await interviewReportModel.create({
         user: req.user.id,
-        resume: resumeContent.text,
+        resume: resumeText,
         selfDescription,
         jobDescription,
         ...interViewReportByAi
